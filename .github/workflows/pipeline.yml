@@ -1,0 +1,252 @@
+# =============================================================
+# APEX HYPER ENGINE — pipeline.yml
+# Case 1FDV-23-0001009 | GlacierEQ/apex-orchestrator
+# Full-spectrum legal case pipeline orchestrator
+# Spiral-Engine | Rico-Enterprise-Builder | OSINT-Investigator
+# Legal-Research-Engine | Hawaii-Legal-Warfare | Federal-Constitutional-Rights
+# =============================================================
+
+name: APEX Full Pipeline Orchestrator
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  schedule:
+    # Every 6 hours — automated sync and evidence ingestion
+    - cron: '0 */6 * * *'
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: 'Pipeline mode'
+        required: false
+        default: 'full'
+        type: choice
+        options:
+          - full
+          - sync-only
+          - legal-gen
+          - evidence-ingest
+          - motherduck-sync
+
+env:
+  CASE_ID: '1FDV-23-0001009'
+  CASE_NAME: 'APEX-LEGAL'
+  APEX_VERSION: '7.0'
+
+jobs:
+
+  # ─────────────────────────────────────────────
+  # JOB 1: SUPERMEMORY INGEST
+  # Push new Notion pages and evidence to APEX-LEGAL collection
+  # ─────────────────────────────────────────────
+  supermemory-ingest:
+    name: 'Supermemory APEX-LEGAL Ingest'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: pip install requests python-dotenv notion-client
+
+      - name: Fetch Notion pages and push to Supermemory
+        env:
+          NOTION_TOKEN: ${{ secrets.NOTION_TOKEN }}
+          SUPERMEMORY_API_KEY: ${{ secrets.SUPERMEMORY_API_KEY }}
+          NOTION_DATABASE_ID: ${{ secrets.NOTION_CASE_DB_ID }}
+        run: python scripts/supermemory_ingest.py
+
+  # ─────────────────────────────────────────────
+  # JOB 2: MOTHERDUCK SYNC
+  # Insert new case events into MotherDuck case_events table
+  # ─────────────────────────────────────────────
+  motherduck-sync:
+    name: 'MotherDuck case_events Sync'
+    runs-on: ubuntu-latest
+    needs: supermemory-ingest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install DuckDB
+        run: pip install duckdb requests
+
+      - name: Sync case events to MotherDuck
+        env:
+          MOTHERDUCK_TOKEN: ${{ secrets.MOTHERDUCK_TOKEN }}
+          NOTION_TOKEN: ${{ secrets.NOTION_TOKEN }}
+        run: python scripts/motherduck_sync.py
+
+  # ─────────────────────────────────────────────
+  # JOB 3: NOTION MASTER DASHBOARD UPDATE
+  # Push analytics and status back to Notion Master Dashboard
+  # ─────────────────────────────────────────────
+  notion-dashboard-update:
+    name: 'Notion Master Dashboard Update'
+    runs-on: ubuntu-latest
+    needs: motherduck-sync
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: pip install requests notion-client duckdb
+
+      - name: Update Notion Master Dashboard
+        env:
+          NOTION_TOKEN: ${{ secrets.NOTION_TOKEN }}
+          NOTION_DASHBOARD_PAGE_ID: ${{ secrets.NOTION_DASHBOARD_PAGE_ID }}
+          MOTHERDUCK_TOKEN: ${{ secrets.MOTHERDUCK_TOKEN }}
+        run: python scripts/notion_dashboard_update.py
+
+  # ─────────────────────────────────────────────
+  # JOB 4: DROPBOX ARCHIVE ORGANIZER
+  # Archive files into /APEX/evidence/, /APEX/filings/, /APEX/correspondence/
+  # ─────────────────────────────────────────────
+  dropbox-archive:
+    name: 'Dropbox APEX Archive Organizer'
+    runs-on: ubuntu-latest
+    needs: notion-dashboard-update
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install Dropbox SDK
+        run: pip install dropbox requests
+
+      - name: Organize Dropbox into APEX structure
+        env:
+          DROPBOX_ACCESS_TOKEN: ${{ secrets.DROPBOX_ACCESS_TOKEN }}
+          DROPBOX_REFRESH_TOKEN: ${{ secrets.DROPBOX_REFRESH_TOKEN }}
+          DROPBOX_APP_KEY: ${{ secrets.DROPBOX_APP_KEY }}
+          DROPBOX_APP_SECRET: ${{ secrets.DROPBOX_APP_SECRET }}
+        run: python scripts/dropbox_archive.py
+
+  # ─────────────────────────────────────────────
+  # JOB 5: LEGAL DOCUMENT GENERATION (Spiral Engine)
+  # Generate irrefutable legal docs — motions, RICO map, federal complaints
+  # ─────────────────────────────────────────────
+  legal-doc-generation:
+    name: 'Spiral Engine — Legal Document Generation'
+    runs-on: ubuntu-latest
+    needs: [supermemory-ingest, motherduck-sync]
+    if: ${{ github.event.inputs.mode == 'legal-gen' || github.event.inputs.mode == 'full' || github.event_name == 'schedule' }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install legal engine dependencies
+        run: pip install requests anthropic openai duckdb notion-client fpdf2 python-docx
+
+      - name: Run Spiral Engine — Legal Document Generation
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          MOTHERDUCK_TOKEN: ${{ secrets.MOTHERDUCK_TOKEN }}
+          NOTION_TOKEN: ${{ secrets.NOTION_TOKEN }}
+          SUPERMEMORY_API_KEY: ${{ secrets.SUPERMEMORY_API_KEY }}
+          DROPBOX_ACCESS_TOKEN: ${{ secrets.DROPBOX_ACCESS_TOKEN }}
+          CASE_ID: ${{ env.CASE_ID }}
+        run: python scripts/spiral_engine_legal_gen.py
+
+      - name: Upload generated legal docs as artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: apex-legal-docs-${{ github.run_number }}
+          path: output/legal-docs/
+          retention-days: 90
+
+  # ─────────────────────────────────────────────
+  # JOB 6: APEX-FS-COMMANDER FILE SYNC
+  # Google Drive + OneDrive full organization pass
+  # ─────────────────────────────────────────────
+  fs-commander-sync:
+    name: 'APEX-FS-Commander Cloud File Sync'
+    runs-on: ubuntu-latest
+    needs: dropbox-archive
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Checkout apex-fs-commander
+        uses: actions/checkout@v4
+        with:
+          repository: GlacierEQ/apex-fs-commander
+          token: ${{ secrets.APEX_GH_PAT }}
+          path: apex-fs-commander
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install FS-Commander dependencies
+        run: |
+          pip install google-api-python-client google-auth-oauthlib \
+            requests msal dropbox duckdb
+
+      - name: Run Google Drive organization pass
+        env:
+          GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
+          ONEDRIVE_CLIENT_ID: ${{ secrets.ONEDRIVE_CLIENT_ID }}
+          ONEDRIVE_CLIENT_SECRET: ${{ secrets.ONEDRIVE_CLIENT_SECRET }}
+          ONEDRIVE_TENANT_ID: ${{ secrets.ONEDRIVE_TENANT_ID }}
+          ONEDRIVE_REFRESH_TOKEN: ${{ secrets.ONEDRIVE_REFRESH_TOKEN }}
+        run: python apex-fs-commander/scripts/cloud_organizer.py
+
+  # ─────────────────────────────────────────────
+  # JOB 7: PIPELINE STATUS REPORT
+  # Write final pipeline status to Notion and Supermemory
+  # ─────────────────────────────────────────────
+  pipeline-status-report:
+    name: 'APEX Pipeline Status Report'
+    runs-on: ubuntu-latest
+    needs:
+      - supermemory-ingest
+      - motherduck-sync
+      - notion-dashboard-update
+      - dropbox-archive
+      - legal-doc-generation
+      - fs-commander-sync
+    if: always()
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: pip install requests notion-client
+
+      - name: Write pipeline status to Notion
+        env:
+          NOTION_TOKEN: ${{ secrets.NOTION_TOKEN }}
+          NOTION_DASHBOARD_PAGE_ID: ${{ secrets.NOTION_DASHBOARD_PAGE_ID }}
+          SUPERMEMORY_API_KEY: ${{ secrets.SUPERMEMORY_API_KEY }}
+          RUN_NUMBER: ${{ github.run_number }}
+          RUN_ID: ${{ github.run_id }}
+          CASE_ID: ${{ env.CASE_ID }}
+        run: python scripts/pipeline_status_report.py
