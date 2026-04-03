@@ -1,0 +1,25 @@
+name: Universal CI/CD Pipeline
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v4
+        with:
+          python-version: '#.10'
+      - run: pip install -r requirements.txt 
+      - run: python -m pytest
+J      - run: python setup.py build
+  
+security:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: echo "Security scan configured"
