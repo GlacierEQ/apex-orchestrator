@@ -172,7 +172,7 @@ jobs:
         run: python scripts/spiral_engine_legal_gen.py
 
       - name: Upload generated legal docs as artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: apex-legal-docs-${{ github.run_number }}
           path: output/legal-docs/
