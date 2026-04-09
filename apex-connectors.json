@@ -1,0 +1,111 @@
+{
+  "apex_system": {
+    "version": "2.0.0",
+    "codename": "GlacierEQ-ACTIVATED",
+    "case_id": "1FDV-23-0001009",
+    "operator": "casey-barton",
+    "github_user": "GlacierEQ",
+    "updated": "2026-04-09T12:42:00-10:00"
+  },
+  "mcpServers": {
+    "github": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-github"],
+      "env": { "GITHUB_PERSONAL_ACCESS_TOKEN": "${GITHUB_PAT}" },
+      "repos": [
+        "GlacierEQ/apex-orchestrator",
+        "GlacierEQ/apex-memory-agent",
+        "GlacierEQ/apex-cognitive-swarm",
+        "GlacierEQ/apex-legal-dashboard",
+        "GlacierEQ/APEX-NEXUS-AUTOMATION",
+        "GlacierEQ/apex-vault",
+        "GlacierEQ/apex-motherduck-engine",
+        "GlacierEQ/aspen-grove-unified",
+        "GlacierEQ/APEX-LEGAL-WARFARE-ORCHESTRATOR",
+        "GlacierEQ/apex-cognitive-swarm"
+      ],
+      "status": "ACTIVE"
+    },
+    "filesystem": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-filesystem",
+        "/Users/casey/apex",
+        "/Users/casey/Documents/legal/1FDV-23-0001009",
+        "/Users/casey/projects",
+        "/Users/casey/evidence-vault"
+      ],
+      "status": "ACTIVE"
+    },
+    "supabase": {
+      "command": "npx",
+      "args": ["-y", "@supabase/mcp-server-supabase@latest"],
+      "env": {
+        "SUPABASE_URL": "${SUPABASE_URL}",
+        "SUPABASE_SERVICE_ROLE_KEY": "${SUPABASE_SERVICE_ROLE_KEY}"
+      },
+      "vector_tables": [
+        "apex_memory",
+        "legal_documents",
+        "case_evidence",
+        "motion_history",
+        "agent_logs"
+      ],
+      "status": "ACTIVE"
+    },
+    "notion": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-notion"],
+      "env": { "NOTION_API_KEY": "${NOTION_API_KEY}" },
+      "databases": [
+        "apex-case-tracker",
+        "evidence-vault",
+        "motion-library",
+        "hearing-calendar",
+        "federal-escalation-log"
+      ],
+      "status": "ACTIVE"
+    },
+    "motherduck": {
+      "command": "npx",
+      "args": ["-y", "@motherduck/mcp-server-motherduck"],
+      "env": { "motherduck_token": "${MOTHERDUCK_TOKEN}" },
+      "databases": [
+        "apex_analytics",
+        "case_evidence_db",
+        "motion_tracking"
+      ],
+      "status": "ACTIVE"
+    },
+    "memory": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-memory"],
+      "status": "ACTIVE"
+    },
+    "sequential-thinking": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-sequential-thinking"],
+      "status": "ACTIVE"
+    },
+    "brave-search": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-brave-search"],
+      "env": { "BRAVE_API_KEY": "${BRAVE_API_KEY}" },
+      "use_cases": ["case_law_research", "statute_lookup", "judicial_conduct_records"],
+      "status": "ACTIVE"
+    },
+    "puppeteer": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-puppeteer"],
+      "use_cases": ["court_filing_scrape", "pacer_monitoring", "evidence_capture"],
+      "status": "ACTIVE"
+    }
+  },
+  "connector_health": {
+    "check_interval_seconds": 60,
+    "auto_reconnect": true,
+    "fallback_chain": ["supabase", "filesystem", "memory"],
+    "alert_on_failure": true
+  }
+}

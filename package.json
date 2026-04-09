@@ -1,0 +1,26 @@
+{
+  "name": "apex-orchestrator",
+  "version": "2.0.0",
+  "description": "APEX Hyper Engine — GlacierEQ | Case 1FDV-23-0001009",
+  "main": "src/apex-swarm.ts",
+  "scripts": {
+    "start": "tsx src/apex-swarm.ts",
+    "bootstrap": "bash scripts/bootstrap.sh",
+    "dev": "tsx watch src/apex-swarm.ts",
+    "legal": "tsx src/apex-swarm.ts 'Analyze current case status and next tactical steps for 1FDV-23-0001009'",
+    "memory:bootstrap": "tsx -e \"import { bootstrapSupabaseSchema } from './src/apex-swarm.ts'; bootstrapSupabaseSchema();\""
+  },
+  "dependencies": {
+    "@langchain/community": "^0.3.0",
+    "@langchain/langgraph": "^0.2.0",
+    "@langchain/openai": "^0.3.0",
+    "@modelcontextprotocol/sdk": "^1.0.0",
+    "@supabase/supabase-js": "^2.45.0",
+    "dotenv": "^16.4.0",
+    "tsx": "^4.19.0",
+    "typescript": "^5.6.0"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}
