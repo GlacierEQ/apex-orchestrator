@@ -1,0 +1,234 @@
+{
+  "$schema": "https://raw.githubusercontent.com/anthropics/mcp/main/schema/mcp-config.schema.json",
+  "_apex_meta": {
+    "operator": "GlacierEQ",
+    "operator_name": "Casey Barton",
+    "case_id": "1FDV-23-0001009",
+    "architecture": "APEX Hyper Engine v2",
+    "jurisdiction": "Hawaii — Federal Escalation Active",
+    "last_updated": "2026-04-09",
+    "hub_repo": "GlacierEQ/apex-orchestrator",
+    "activation": "APEX_CONNECTOR_STACK_LIVE"
+  },
+  "mcpServers": {
+
+    "github": {
+      "_label": "GitHub — Primary Source Control & Evidence Versioning",
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-github"],
+      "env": {
+        "GITHUB_PERSONAL_ACCESS_TOKEN": "${GITHUB_PAT}"
+      },
+      "_apex_role": "version control, evidence chain, repo orchestration",
+      "_repos_in_scope": [
+        "GlacierEQ/apex-orchestrator",
+        "GlacierEQ/APEX-LEGAL-WARFARE-ORCHESTRATOR",
+        "GlacierEQ/apex-cognitive-swarm",
+        "GlacierEQ/apex-memory-agent",
+        "GlacierEQ/apex-motherduck-engine",
+        "GlacierEQ/apex-legal-dashboard",
+        "GlacierEQ/APEX-NEXUS-AUTOMATION",
+        "GlacierEQ/apex-vault",
+        "GlacierEQ/nexus-legal-grid",
+        "GlacierEQ/aspen-grove-unified"
+      ]
+    },
+
+    "filesystem": {
+      "_label": "Filesystem — Local Evidence & Document Access",
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-filesystem",
+        "/Users/casey/APEX",
+        "/Users/casey/Documents/Case-1FDV-23-0001009",
+        "/Users/casey/Desktop",
+        "/tmp/apex-staging"
+      ],
+      "_apex_role": "local document access, motion drafts, evidence staging"
+    },
+
+    "supabase": {
+      "_label": "Supabase — Primary Database & Vector Memory",
+      "command": "npx",
+      "args": ["-y", "@supabase/mcp-server-supabase@latest"],
+      "env": {
+        "SUPABASE_URL": "${SUPABASE_URL}",
+        "SUPABASE_SERVICE_ROLE_KEY": "${SUPABASE_SERVICE_ROLE_KEY}",
+        "SUPABASE_ACCESS_TOKEN": "${SUPABASE_ACCESS_TOKEN}"
+      },
+      "_apex_role": "pgvector memory persistence, case data warehouse, audit trail",
+      "_tables_in_scope": [
+        "apex_memory",
+        "case_events",
+        "evidence_index",
+        "motion_log",
+        "judicial_conduct_log"
+      ]
+    },
+
+    "notion": {
+      "_label": "Notion — Case Intelligence & Document Workspace",
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-notion"],
+      "env": {
+        "NOTION_API_TOKEN": "${NOTION_API_TOKEN}"
+      },
+      "_apex_role": "case notes, motion drafts, hearing calendars, discovery tracking"
+    },
+
+    "motherduck": {
+      "_label": "MotherDuck — Analytics Engine & Evidence SQL",
+      "command": "npx",
+      "args": ["-y", "duckdb-mcp-server"],
+      "env": {
+        "MOTHERDUCK_TOKEN": "${MOTHERDUCK_TOKEN}",
+        "DUCKDB_DATABASE": "md:apex_case_db"
+      },
+      "_apex_role": "cross-source SQL analytics, evidence timelines, Supabase/Notion/GitHub bridge",
+      "_hub_repo": "GlacierEQ/apex-motherduck-engine"
+    },
+
+    "pinecone": {
+      "_label": "Pinecone — Semantic Search & RAG Memory",
+      "command": "npx",
+      "args": ["-y", "@pinecone-database/mcp"],
+      "env": {
+        "PINECONE_API_KEY": "${PINECONE_API_KEY}",
+        "PINECONE_ENVIRONMENT": "${PINECONE_ENVIRONMENT}"
+      },
+      "_apex_role": "semantic case law retrieval, RAG over motions, constitutional precedent search",
+      "_hub_repo": "GlacierEQ/pinecone-apex-nexus",
+      "_indexes": [
+        "apex-case-memory",
+        "apex-legal-precedents",
+        "apex-evidence-vectors"
+      ]
+    },
+
+    "langgraph_memory": {
+      "_label": "LangGraph Memory Agent — Persistent Context Engine",
+      "command": "python",
+      "args": ["-m", "apex_memory_agent.server"],
+      "cwd": "${APEX_ROOT}/apex-memory-agent",
+      "env": {
+        "LANGCHAIN_API_KEY": "${LANGCHAIN_API_KEY}",
+        "LANGCHAIN_TRACING_V2": "true",
+        "LANGCHAIN_PROJECT": "APEX-Case-1FDV-23-0001009",
+        "OPENAI_API_KEY": "${OPENAI_API_KEY}",
+        "SUPABASE_URL": "${SUPABASE_URL}",
+        "SUPABASE_SERVICE_ROLE_KEY": "${SUPABASE_SERVICE_ROLE_KEY}"
+      },
+      "_apex_role": "multi-tier context routing, ReflectionExecutor background extraction, dynamic follow-up",
+      "_hub_repo": "GlacierEQ/apex-memory-agent",
+      "_architecture": "LangGraph + LangMem + Supabase pgvector"
+    },
+
+    "cognitive_swarm": {
+      "_label": "APEX Cognitive Swarm — 200-Agent Orchestrator",
+      "command": "python",
+      "args": ["-m", "apex_swarm.server"],
+      "cwd": "${APEX_ROOT}/apex-cognitive-swarm",
+      "env": {
+        "OPENAI_API_KEY": "${OPENAI_API_KEY}",
+        "ANTHROPIC_API_KEY": "${ANTHROPIC_API_KEY}",
+        "LANGCHAIN_API_KEY": "${LANGCHAIN_API_KEY}",
+        "SWARM_SIZE": "200",
+        "DISPATCH_MODE": "DOCTOR_STRANGE"
+      },
+      "_apex_role": "legal analysis dispatch, parallel agent tasking, cognitive orchestration",
+      "_hub_repo": "GlacierEQ/apex-cognitive-swarm"
+    },
+
+    "gremlin": {
+      "_label": "Gremlin — Chaos Engineering & Resilience Testing",
+      "command": "npx",
+      "args": ["-y", "@gremlin/mcp"],
+      "env": {
+        "GREMLIN_API_KEY": "${GREMLIN_API_KEY}",
+        "GREMLIN_TEAM_ID": "${GREMLIN_TEAM_ID}"
+      },
+      "_apex_role": "resilience validation, failover testing, system hardening before court deadlines",
+      "_note": "Real Gremlin chaos engineering platform — gremlin.com"
+    },
+
+    "legal_warfare_pipeline": {
+      "_label": "APEX Legal Warfare Orchestrator — Motion Engine",
+      "command": "python",
+      "args": ["-m", "apex_legal.server"],
+      "cwd": "${APEX_ROOT}/APEX-LEGAL-WARFARE-ORCHESTRATOR",
+      "env": {
+        "CASE_ID": "1FDV-23-0001009",
+        "JURISDICTION": "Hawaii",
+        "FEDERAL_ESCALATION": "ACTIVE",
+        "RICO_MODE": "1983_PARALLEL",
+        "OPENAI_API_KEY": "${OPENAI_API_KEY}",
+        "SUPABASE_URL": "${SUPABASE_URL}",
+        "NOTION_API_TOKEN": "${NOTION_API_TOKEN}"
+      },
+      "_apex_role": "777-iteration motion engine, HRS statute citation, federal escalation routing",
+      "_hub_repo": "GlacierEQ/APEX-LEGAL-WARFARE-ORCHESTRATOR"
+    },
+
+    "vault": {
+      "_label": "APEX Sovereign Vault — Credential & Secret Manager",
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-everything"],
+      "cwd": "${APEX_ROOT}/apex-vault",
+      "env": {
+        "VAULT_TOKEN": "${VAULT_TOKEN}"
+      },
+      "_apex_role": "secure credential rotation, API key vault, forensic audit trail",
+      "_hub_repo": "GlacierEQ/apex-vault"
+    },
+
+    "brave_search": {
+      "_label": "Brave Search — Real-Time Legal & Case Research",
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-brave-search"],
+      "env": {
+        "BRAVE_API_KEY": "${BRAVE_API_KEY}"
+      },
+      "_apex_role": "live case law research, judicial misconduct precedents, statute lookups"
+    },
+
+    "sequential_thinking": {
+      "_label": "Sequential Thinking — Multi-Step Legal Reasoning",
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-sequential-thinking"],
+      "_apex_role": "chain-of-thought reasoning for complex motions, RICO element analysis, §1983 claim construction"
+    }
+
+  },
+
+  "apex_connector_registry": {
+    "total_active_connectors": 12,
+    "core_stack": ["github", "filesystem", "supabase", "notion"],
+    "analytics_stack": ["motherduck", "pinecone"],
+    "agent_stack": ["langgraph_memory", "cognitive_swarm"],
+    "ops_stack": ["gremlin", "vault"],
+    "research_stack": ["brave_search", "sequential_thinking"],
+    "legal_pipeline": ["legal_warfare_pipeline"]
+  },
+
+  "apex_env_manifest": {
+    "_note": "All ${VAR} placeholders must be set in your .env or environment before starting MCP servers",
+    "required_env_vars": [
+      "GITHUB_PAT",
+      "SUPABASE_URL",
+      "SUPABASE_SERVICE_ROLE_KEY",
+      "SUPABASE_ACCESS_TOKEN",
+      "NOTION_API_TOKEN",
+      "MOTHERDUCK_TOKEN",
+      "PINECONE_API_KEY",
+      "PINECONE_ENVIRONMENT",
+      "LANGCHAIN_API_KEY",
+      "OPENAI_API_KEY",
+      "ANTHROPIC_API_KEY",
+      "GREMLIN_API_KEY",
+      "GREMLIN_TEAM_ID",
+      "BRAVE_API_KEY",
+      "VAULT_TOKEN",
+      "APEX_ROOT"
+    ],
+    "apex_root_default": "/Users/casey/APEX"
+  }
+}
